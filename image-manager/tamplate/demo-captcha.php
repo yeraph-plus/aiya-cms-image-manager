@@ -8,12 +8,13 @@ $_SESSION['captcha'] = $captcha->captcha_code(4);
 
 //显示验证
 header('Content-Type: image/png');
-$captcha->captcha_generate($_SESSION['captcha'], 100, 50, 14);
+$captcha->captcha_generate($_SESSION['captcha']);
 
 //验证验证
 session_start();
 
 if (strtolower($user_captcha) == strtolower($_SESSION['captcha'])) {
+    //或者 strcasecmp() 忽略大小写比较
     echo 'Success!';
 } else {
     echo 'Fail';

@@ -17,5 +17,7 @@ if (!defined('ABSPATH')) exit;
 define('AYA_IMAGE_VERSION', '1.0');
 define('AYA_IMAGE_PATH', plugin_dir_path(__FILE__));
 
-//引入设置框架
+//引入图片处理组件
 require_once AYA_IMAGE_PATH . 'image-manager/setup.php';
+//内置图床扩展
+require_once AYA_IMAGE_PATH . 'bulit-in-pic-bed/setup.php';
