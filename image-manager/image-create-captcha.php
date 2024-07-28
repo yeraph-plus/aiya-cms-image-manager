@@ -26,7 +26,7 @@ class AYA_Imagine_Captcha
             'captcha_color' => '#000000',
             'captcha_offset_x' => 30,
             'captcha_offset_y' => 20,
-            'captcha_font' => (__DIR__) . '/assets/font/imageCaptchaFont.ttf',
+            'captcha_font' => (__DIR__) . '/font/imageCaptchaFont.ttf',
             'captcha_font_size' => 14,
         );
     }

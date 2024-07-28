@@ -43,15 +43,11 @@ class AYA_Image_Manager extends AYA_Image_Action
         return $local_dir;
     }
     //生成缓存文件位置
-    public function image_cache_path($image, $cache_name)
+    public function image_cache_path($cache_name)
     {
-        if (!is_object($image)) return false;
-
         //定义保存路径
         $cache_file_dir = $this->config['save_upload_path'] . '/cache';
-        $cache_file_name = $cache_name . '.jpg';
-        //保存
-        $image->save($cache_file_name, array('jpeg_quality' => 96));
+        $cache_file_name = $cache_name;
 
         return self::local_mkdir($cache_file_dir)  . '/' . $cache_file_name;
     }

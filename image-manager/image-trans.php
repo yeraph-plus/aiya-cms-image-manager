@@ -171,33 +171,40 @@ class AYA_Imagine_Trans extends AYA_Image_Manager
         } else {
             //文字水印
             $watermark_text = $this->config['watermark_font_text'];
-            $watermark_size = $this->config['watermark_font_size'];
-            $watermark_name_md5 = md5($watermark_text, false);
+            $watermark_text_md5 = md5($watermark_text, false);
 
-            $watermark_file = parent::image_cache_path('watermark_' . $watermark_name_md5 . '.png');
+            $watermark_file = parent::image_cache_path('watermark_' . $watermark_text_md5 . '.png');
 
             //不存在水印文件则创建
             if (!file_exists($watermark_file)) {
+                //获取字体
+                $watermark_font_file = $this->config['watermark_font_path'];
+                $watermark_size = $this->config['watermark_font_size'];
+                $watermark_color = $this->config['watermark_font_color'];
+                $watermark_opacity = $this->config['watermark_font_opacity'];
                 //检查字体文件位置
-                $watermark_box = parent::image_bbox_text_size($watermark_size, $watermark_text);
-                //找不到字体文件
-                if ($watermark_box == false) return false;
+                if (!file_exists($watermark_font_file)) return false;
 
                 //生成水印图片
-                $manager = new GdImagine();
-                $palette = new RGB();
-                $point = new Point(0, 0);
-                $box = new Box($watermark_box['fw'], $watermark_box['fh']);
+                $new_manager = new GdImagine();
+                $new_palette = new RGB();
 
-                $background = $palette->color(array(0, 0, 0), 0);
+                //加载字体
+                $white_point = new Point(0, 0);
+                $white_color = $new_palette->color($watermark_color, $watermark_opacity);
+                $white_background = $new_palette->color(array(0, 0, 0), 0);
 
-                $white = $palette->color($this->config['watermark_font_color'], $this->config['watermark_font_opacity']);
+                $white_font = $new_manager->font($watermark_font_file, $watermark_size, $white_color);
 
-                $font = $manager->font($this->config['font_path'], $this->config['watermark_font_size'], $white);
+                $white_size = $white_font->box($watermark_text);
+                $white_width = $white_size->getWidth();
+                $white_height = $white_size->getHeight();
 
-                $watermark_canvas = $manager->create($box, $background);
+                $white_box = new Box($white_width, $white_height);
+
                 //绘制文字
-                $watermark_canvas->draw()->text($watermark_text, $font, $point);
+                $watermark_canvas = $new_manager->create($white_box, $white_background);
+                $watermark_canvas->draw()->text($watermark_text, $white_font, $white_point);
                 //保存水印图片
                 $watermark_canvas->save($watermark_file, array('png_compression_level' => 9));
             }

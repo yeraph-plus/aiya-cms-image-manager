@@ -102,11 +102,11 @@ class AYA_Imagine_Draws extends AYA_Image_Manager
         }
 
         //创建缓存，用于调整组件颜色
-        $cover_cache = parent::image_cache_path($image, 'cover_cached_background');
-
+        $cover_cache = parent::image_cache_path('cover_cached_background.jpg');
         $image->save($cover_cache, array('jpeg_quality' => 96));
 
         $auto_color = $this->config['cover_fg_element_color_auto'];
+
         if ($auto_color) {
             //计算主要颜色
             $bg_main_color = parent::image_primary_color($cover_cache);
@@ -115,6 +115,7 @@ class AYA_Imagine_Draws extends AYA_Image_Manager
         } else {
             //计算图片亮度
             $cover_bright = parent::image_average_brightness($cover_cache);
+
             if ($cover_bright > 128) {
                 $use_color = $this->config['cover_fg_element_color_light'];
             } else {
@@ -145,8 +146,7 @@ class AYA_Imagine_Draws extends AYA_Image_Manager
             }
         }
 
-        $image_name = 'cover_' . time();
-        $image_save_param = parent::image_save_new_param($image_name, 'post-cover');
+        $image_save_param = parent::image_save_new_param('cover_' . time(), 'post-cover');
         //保存文件
         $image->save($image_save_param['path'], $image_save_param['quality']);
 
@@ -313,7 +313,7 @@ class AYA_Imagine_Draws extends AYA_Image_Manager
         }
         //绘制第一行
         if (isset($content_1st)) {
-            //获取图像大小和文本尺寸
+            //获取文本尺寸
             $box_size = $white_font->box($content_1st);
             $box_width = $box_size->getWidth();
             $box_height = $box_size->getHeight();
@@ -330,7 +330,7 @@ class AYA_Imagine_Draws extends AYA_Image_Manager
         }
         //绘制第二行
         if (isset($content_2nd)) {
-            //获取图像大小和文本尺寸
+            //获取文本尺寸
             $box_size = $white_font->box($content_2nd);
             $box_width = $box_size->getWidth();
             $box_height = $box_size->getHeight();
@@ -347,7 +347,7 @@ class AYA_Imagine_Draws extends AYA_Image_Manager
         }
         //绘制第三行
         if (isset($content_3rd)) {
-            //获取图像大小和文本尺寸
+            //获取文本尺寸
             $box_size = $white_font->box($content_3rd);
             $box_width = $box_size->getWidth();
             $box_height = $box_size->getHeight();
