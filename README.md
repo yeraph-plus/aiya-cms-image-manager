@@ -1,4 +1,4 @@
-# AIYA-CMS 主题图像处理依赖
+## AIYA-CMS 主题图像处理依赖
 
 ![截图](https://github.com/yeraph-plus/aiya-cms-image-manager/blob/main/screenshot/2024-07-30%20040126.png)
 
@@ -16,11 +16,11 @@ PS：创建 Composer 的 PHP 版本为 8.1 ，需要更低版本的可以自行�
 
 ---
 
-## 使用方式
+#### 使用方式
 
 一些字体、尺寸等其他的设置和参数，默认是在 setup.php 里定义的。
 
-更详细的说明之后有时间再写吧，这里先给出DEMO。
+更详细的说明之后有时间再写吧，这里先列出用法。
 
 图片处理：
 
