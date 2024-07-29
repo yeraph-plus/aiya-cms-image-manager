@@ -18,83 +18,89 @@ if (!class_exists('AYA_Imagine_Trans')) {
     class AYA_Imagine_Trans extends AYA_Image_Manager
     {
         //入口方法
-        public function image_generate($func_type = '', $file_or_url = '', $path_str = '')
+        public function image_generate($file_or_url = '', $func_type = '', $backup_type = false)
         {
             //验证文件
             $this_image = parent::image_is_url($file_or_url);
             //文件不存在
-            if ($this_image == false) return null;
-
-            //转换缩略图参数
-            if ($path_str != false || $path_str != '') {
-                if (strpos($path_str, 'x') !== false) {
-                    //分割参数
-                    list($width, $height) = explode('x', $path_str);
-                } else {
-                    list($width, $height) = array($path_str, 0);
-                }
-                $save_path = $path_str;
-            } else {
-                $save_path = false;
-            }
-
-            $image_save_param = parent::image_save_param($file_or_url, $save_path);
-
-            $image_path = $image_save_param['path'];
-
-            //已生成，直接返回
-            if (file_exists($image_path)) {
-                return $image_path;
-            }
-
-            $image_quality = $image_save_param['quality'];
+            if ($this_image == false) return false;
 
             //打开图片
-            if ($this_image == true) {
+            if ($this_image == 'is_url') {
                 $image = parent::image_load_remote($file_or_url);
+                $is_url = true;
             } else {
                 $image = parent::image_open($this_image);
+                $is_url = false;
             }
+
             //打开失败
             if (!is_object($image)) return $image;
 
+            $save_param = parent::image_save_param_array($this_image, '', $is_url);
+            //进行备份
+            if ($backup_type && $this_image != 'is_url') {
+                $image_backup = parent::image_backup($this_image, false);
+            }
+
+
             //选择需要的生成器
             switch ($func_type) {
-                case 'thumb':
-                    $func = self::image_thumb_generate($image, $image_path, $image_quality, $width, $height);
+                case 'convert':
+                    $func = self::image_only_convert_generate($image, $save_param['save_path'], $save_param['save_quality']);
                     break;
                 case 'auto_scale':
-                    $func = self::image_auto_scale_generate($image, $image_path, $image_quality);
-                    break;
-                case 'convert':
-                    $func = self::image_only_convert_generate($image, $image_path, $image_quality);
+                    $func = self::image_auto_scale_generate($image, $save_param['save_path'], $save_param['save_quality']);
                     break;
                 case 'watermark':
-                    $func = self::image_watermark_generate($image, $image_path, $image_quality);
+                    $func = self::image_watermark_generate($image, $save_param['save_path'], $save_param['save_quality']);
                     break;
                 default:
                     $func = false;
             }
             //返回
-            return ($func) ? $image_path : 'ERROR - Input parameter generation failure.';
+            return ($func) ? $save_param['save_path'] : 'ERROR - Input parameter generation failure.';
         }
         //图像裁剪缩放实例
-        public function image_thumb_generate($image, $save_path, $save_quality, $width = 0, $height = 0)
+        public function image_thumb_generate($image_local_url, $width = 0, $height = 0)
         {
-            if (!is_object($image)) return false;
-
-            //如果宽高未设置
-            if ($width == 0 && $height == 0) {
+            //如果使用转换缩略图参数
+            if (strpos($width, 'x') !== false) {
+                //分割参数
+                list($width, $height) = explode('x', $width);
+            }
+            //如果宽高均未设置
+            if ($width === 0 && $height === 0) {
                 $width = $this->config['thumb_default_width'];
                 $height = $this->config['thumb_default_height'];
             }
 
+            //保存位置
+            $thumb_name = $this->config['save_thumb_prefix'] . md5($image_local_url, false) . $this->config['save_format'];
+            $thumb_dir = parent::local_mkdir($this->config['save_upload_path'] . '/' . $width . 'x' . $height);
+            $thumb_saved_path = $thumb_dir . '/' . $thumb_name;
+            //已生成，直接返回
+            if (file_exists($thumb_saved_path)) {
+                return $thumb_saved_path;
+            }
+
+            //验证文件
+            $this_image = parent::image_is_url($image_local_url);
+            //不允许直接处理远程图片
+            if ($this_image == false || $this_image == 'is_url') return false;
+
+            //打开图片
+            $image = parent::image_open($this_image);
+
+            if (!is_object($image)) return false;
+
+
             //获得尺寸
-            $image_size = parent::image_get_size($image);
-            $size = new Box($image_size['ow'], $image_size['oh']);
+            $image_size = parent::image_size($image);
+            $size = new Box($image_size['w'], $image_size['h']);
 
             //计算缩放尺寸
-            $ratio = parent::image_scale_ratio($width, $height, $image_size['ow'], $image_size['oh'], true);
+            $ratio = parent::image_scale_ratio($width, $height, $image_size['w'], $image_size['h'], true);
 
             $size = $size->scale($ratio);
 
@@ -113,9 +119,10 @@ if (!class_exists('AYA_Imagine_Trans')) {
             }
 
             //保存图像
-            $image->save($save_path, $save_quality);
+            $save_quality = parent::image_save_quality($this->config['save_format']);
+            $image->save($thumb_saved_path, $save_quality);
 
-            return true;
+            return $thumb_saved_path;
         }
         //图片转换实例
         public function image_only_convert_generate($image, $save_path, $save_quality)
@@ -161,14 +168,14 @@ if (!class_exists('AYA_Imagine_Trans')) {
             if (!is_object($image)) return false;
 
             //获得尺寸
-            $image_size = parent::image_get_size($image);
+            $image_size = parent::image_size($image);
 
             //检查图片水印还是文字水印
             if ($this->config['watermark_type'] == 'image') {
                 //图片水印
                 $mark_image = parent::image_open($this->config['watermark_image']);
                 //获得尺寸
-                $mark_size = parent::image_get_size($mark_image);
+                $mark_size = parent::image_size($mark_image);
             } else {
                 //文字水印
                 $watermark_text = $this->config['watermark_font_text'];
@@ -212,11 +219,11 @@ if (!class_exists('AYA_Imagine_Trans')) {
                 //打开水印
                 $mark_image = parent::image_open($watermark_file);
                 //获得尺寸
-                $mark_size = parent::image_get_size($mark_image);
+                $mark_size = parent::image_size($mark_image);
             }
 
             //计算水印位置
-            $position = parent::image_point_coordinate($this->config['watermark_position'], $image_size['ow'], $image_size['oh'], $mark_size['ow'], $mark_size['oh']);
+            $position = parent::image_point_coordinate($this->config['watermark_position'], $image_size['w'], $image_size['h'], $mark_size['w'], $mark_size['h']);
 
             $water_mark_point = new Point($position['pw'], $position['ph']);
 

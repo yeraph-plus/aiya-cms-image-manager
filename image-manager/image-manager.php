@@ -52,6 +52,47 @@ if (!class_exists('AYA_Image_Manager')) {
 
             return self::local_mkdir($cache_file_dir)  . '/' . $cache_file_name;
         }
+        //生成新文件位置
+        public function image_save_new_file_path($save_name = '', $save_path = '')
+        {
+            //定义保存路径
+            $save_file_dir = $this->config['save_upload_path'] . '/' . $save_path;
+            //定义保存格式
+            $save_extend = $this->config['save_format'];
+            //保存文件名
+            if ($save_name == '') {
+                $save_name = 'unname_' . time();
+            }
+            $save_file_name = $save_name . '.' . $save_extend;
+            //返回保存参数组
+            return self::local_mkdir($save_file_dir)  . '/' . $save_file_name;
+        }
+        //保存参数
+        public function image_save_quality($extend = '')
+        {
+            if (empty($extend)) {
+                $extend = $this->config['save_format'];
+            }
+            //生成质量参数
+            switch ($extend) {
+                case 'jpg':
+                    $save_quality = array('jpeg_quality' => $this->config['save_quality']);
+                    break;
+                case 'png':
+                    $save_quality = array('png_compression_level' => intval($this->config['save_quality'] / 10));
+                    break;
+                case 'webp':
+                    $save_quality = array('webp_quality' => $this->config['save_quality']);
+                    break;
+                case 'gif':
+                    $save_quality = array('flatten' => false);
+                    break;
+                default:
+                    $save_quality = null;
+                    break;
+            }
+            return $save_quality;
+        }
         //打开文件
         public function image_open($image_file = '')
         {
@@ -60,6 +101,15 @@ if (!class_exists('AYA_Image_Manager')) {
 
             //返回Object对象
             return $this->manager->open($image_file);
+        }
+        //尺寸计算
+        public function image_size($image_obj)
+        {
+            if (!is_object($image_obj)) return false;
+
+            $image_size = $image_obj->getSize();
+
+            return array('w' => $image_size->getWidth(), 'h' => $image_size->getHeight());
         }
         //判断是否为URL
         public function image_is_url($file_or_url = '')
@@ -95,14 +145,14 @@ if (!class_exists('AYA_Image_Manager')) {
         //打开远程文件
         public function image_load_remote($image_url = '')
         {
-            $info = getimagesize($image_url);
+            $image_info = getimagesize($image_url);
             //不是图片
-            if (!$info) return false;
+            if (!$image_info) return false;
 
             //允许的图片类型
             $allow_mime = ['image/jpeg', 'image/png', 'image/gif'];
 
-            if (!in_array($info['mime'], $allow_mime)) return false;
+            if (!in_array($image_info['mime'], $allow_mime)) return false;
 
             //设置超时
             ini_set('default_socket_timeout', 10);
@@ -115,135 +165,68 @@ if (!class_exists('AYA_Image_Manager')) {
             //返回Object对象
             return $this->manager->load($content);
         }
-        //保存位置和保存参数
-        public function image_save_param($origin_file = '', $save_path = '')
+        //备份原文件
+        public function image_backup($origin_file = '', $copy = false)
         {
-            //定位文件
-            $this_flie = self::image_is_url($origin_file);
+            //是否创建原文件备份
+            if ($this->config['save_backup_raw_file']) {
+                $origin_file_dir = dirname($origin_file);
+                $origin_file_name = basename($origin_file);
+                //备份原文件
+                $backup_dir = self::local_mkdir($this->config['save_upload_path'] . '/backup');
+                $backup_file = $backup_dir . '/raw_' . $origin_file_name;
 
-            //文件不存在
-            if ($this_flie == false) return false;
-
+                //检查文件存在
+                if ($copy) {
+                    //复制文件
+                    $moved = copy($origin_file, $backup_file);
+                    //删除原文件
+                    //unlink($origin_file);
+                } else {
+                    //移动文件
+                    $moved = rename($origin_file, $backup_file);
+                }
+            }
+            return $moved;
+        }
+        //保存位置和保存参数
+        public function image_save_param_array($origin_file = '', $save_path = '', $is_url = false)
+        {
             //如果是URL
-            if ($this_flie == 'is_url') {
-                //无需文件替换
-                $base_name_md5 = md5($origin_file, false);
-                $save_path = empty($save_path) ? 'default' : $save_path;
-            } else {
-                //定义保存路径文件名
-                $origin_file_dir = dirname($this_flie);
-                $origin_file_name = basename($this_flie);
-                $base_name_md5 = md5($origin_file_name, false);
+            if ($is_url) {
+                //检查保存位置
+                $save_path = empty($save_path) ? 'remote' : $save_path;
             }
 
-            //定义保存格式
-            $base_extend = $this->config['save_format'];
+            //获取保存格式
+            $save_extend = $this->config['save_format'];
             //如果是GIF，强制为GIF
             if (strpos($origin_file, '.gif') !== false) {
-                $base_extend = 'gif';
+                $save_extend = 'gif';
             }
 
-            //是否替换原文件
+            //在原文件位置保存
             if ($save_path == '' || $save_path === false) {
-                //如果保存格式和原文件一致
-                if (strpos($origin_file, '.' . $base_extend) !== false) {
-                    //备份原文件
-                    $backup_file = $origin_file_dir . '/raw_' . $origin_file_name;
-                    //检查文件存在
-                    if (!file_exists($backup_file)) {
-                        //复制文件
-                        copy($origin_file, $backup_file);
-                        //删除原文件
-                        //unlink($origin_file);
-                    }
-                    //使用原文件名
-                    $save_name = $origin_file_name;
-                } else {
+                //检查保存格式和原文件一致
+                if (strpos($origin_file, '.' . $save_extend) === false) {
                     //根据保存设置生成新文件格式
-                    $save_name = substr($origin_file_name, 0, strrpos($origin_file_name, '.')) . '.' . $base_extend;
+                    $origin_file = substr($origin_file, 0, strrpos($origin_file, '.')) . '.' . $save_extend;
                 }
-
-                $full_path_flie = $origin_file_dir . '/' . $save_name;
+                $save_path = $origin_file;
             } else {
-                $save_file_dir = $this->config['save_upload_path'] . '/' . $save_path;
-                $save_name = $this->config['save_thumb_prefix'] . $base_name_md5 . '.' . $base_extend;
+                //MD5生成文件名
+                $base_name_md5 = md5($origin_file, false);
+                $save_dir = $this->config['save_upload_path'] . '/' . $save_path;
+                $save_name = $base_name_md5 . '.' . $save_extend;
 
                 //Tips: 输出的位置是/wp-content/thumbnail/{$save_path}/thumb_{md5}.jpg
-                $full_path_flie = self::local_mkdir($save_file_dir)  . '/' . $save_name;
+                $save_path = self::local_mkdir($save_dir)  . '/' . $save_name;
             }
 
-            //生成质量参数
-            switch ($base_extend) {
-                case 'jpg':
-                    $save_quality = array('jpeg_quality' => $this->config['save_quality']);
-                    break;
-                case 'png':
-                    $save_quality = array('png_compression_level' => intval($this->config['save_quality'] / 10));
-                    break;
-                case 'webp':
-                    $save_quality = array('webp_quality' => $this->config['save_quality']);
-                    break;
-                case 'gif':
-                    $save_quality = array('flatten' => false);
-                    break;
-                default:
-                    $save_quality = null;
-                    break;
-            }
             //返回保存参数组
             return array(
-                'path' => $full_path_flie,
-                'quality' => $save_quality,
-            );
-        }
-        //保存新文件
-        public function image_save_new_param($save_name = '', $save_path = '')
-        {
-            //定义保存路径
-            $save_file_dir = $this->config['save_upload_path'] . '-' . $save_path;
-            //定义保存格式
-            $base_extend = $this->config['save_format'];
-            //保存文件名
-            if ($save_name == '') {
-                $save_name = 'unname_' . time();
-            }
-            $save_file_name = $save_name . '.' . $base_extend;
-            //生成质量参数
-            switch ($base_extend) {
-                case 'jpg':
-                    $save_quality = array('jpeg_quality' => $this->config['save_quality']);
-                    break;
-                case 'png':
-                    $save_quality = array('png_compression_level' => intval($this->config['save_quality'] / 10));
-                    break;
-                case 'webp':
-                    $save_quality = array('webp_quality' => $this->config['save_quality']);
-                    break;
-                case 'gif':
-                    $save_quality = array('flatten' => false);
-                    break;
-                default:
-                    $save_quality = null;
-                    break;
-            }
-            //返回保存参数组
-            return array(
-                'path' => self::local_mkdir($save_file_dir)  . '/' . $save_file_name,
-                'quality' => $save_quality,
-            );
-        }
-        //获得图片尺寸
-        public function image_get_size($image)
-        {
-            if (!is_object($image)) return false;
-
-            $image_size = $image->getSize();
-            $origin_width = $image_size->getWidth();
-            $origin_height = $image_size->getHeight();
-
-            return array(
-                'ow' => $origin_width,
-                'oh' => $origin_height
+                'save_path' => $save_path,
+                'save_quality' => self::image_save_quality($save_extend),
             );
         }
         //坐标计算器
@@ -312,6 +295,19 @@ if (!class_exists('AYA_Image_Manager')) {
             $height = $bbox[1] - $bbox[7];
 
             return array('fw' => $width, 'fh' => $height);
+        }
+        //尺寸计算器
+        public function image_get_size($image_file)
+        {
+            //提取图片宽高
+            $image_size = getimagesize($image_file);
+            $width = $image_size[0];
+            $height = $image_size[1];
+
+            return array(
+                'ow' => $width,
+                'oh' => $height,
+            );
         }
         //亮度计算器
         public function image_average_brightness($image_file)

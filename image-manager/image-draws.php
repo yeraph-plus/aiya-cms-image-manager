@@ -17,34 +17,6 @@ use Imagine\Image\FontInterface;
 if (!class_exists('AYA_Imagine_Draws')) {
     class AYA_Imagine_Draws extends AYA_Image_Manager
     {
-        //创建盒子
-        public function draw_box($width, $height)
-        {
-            $canvas_box = new Box($width, $height);
-            return $canvas_box;
-        }
-        //创建空白画布
-        public function draw_create($width, $height)
-        {
-            $canvas_box = self::draw_box($width, $height);
-            $canvas_color = self::draw_color(array(0, 0, 0), 0);
-
-            $canvas_image = $this->manager->create($canvas_box, $canvas_color);
-            return $canvas_image;
-        }
-        //调色板
-        public function draw_color($color, $transparent = 100)
-        {
-            $canvas_palette = new RGB();
-            return $canvas_palette->color($color, $transparent);
-        }
-        //坐标计算
-        public function draw_point($x, $y)
-        {
-            $canvas_point = new Point($x, $y);
-            return $canvas_point;
-        }
-
         //海报生成实例
         public function image_poster_drawing()
         {
@@ -55,13 +27,13 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //输出
             $image->show('jpg');
 
-            $image_save_param = parent::image_save_new_param('poster_' . time(), 'post-poster');
+            $saved_quality = parent::image_save_quality();
+            $image_save_path = parent::image_save_new_file_path('poster_' . time(), 'poster');
             //保存文件
-            $image->save($image_save_param['path'], $image_save_param['quality']);
+            $image->save($image_save_path, $saved_quality);
 
-            return $image_save_param['path'];
+            return $image_save_path;
         }
-
         //图像生成实例
         public function image_cover_drawing($cover_apply = array())
         {
@@ -119,7 +91,6 @@ if (!class_exists('AYA_Imagine_Draws')) {
             $image->save($cover_cache, array('jpeg_quality' => 96));
 
             $auto_color = $this->config['cover_fg_element_color_auto'];
-
             if ($auto_color) {
                 //计算主要颜色
                 $bg_main_color = parent::image_primary_color($cover_cache);
@@ -159,12 +130,41 @@ if (!class_exists('AYA_Imagine_Draws')) {
                 }
             }
 
-            $image_save_param = parent::image_save_new_param('cover_' . time(), 'post-cover');
+            $saved_quality = parent::image_save_quality();
+            $image_save_path = parent::image_save_new_file_path('cover_' . time(), 'cover');
             //保存文件
-            $image->save($image_save_param['path'], $image_save_param['quality']);
+            $image->save($image_save_path, $saved_quality);
 
-            return $image_save_param['path'];
+            return $image_save_path;
         }
+        //创建盒子
+        public function draw_box($width, $height)
+        {
+            $canvas_box = new Box($width, $height);
+            return $canvas_box;
+        }
+        //创建空白画布
+        public function draw_create($width, $height)
+        {
+            $canvas_box = self::draw_box($width, $height);
+            $canvas_color = self::draw_color(array(0, 0, 0), 0);
+
+            $canvas_image = $this->manager->create($canvas_box, $canvas_color);
+            return $canvas_image;
+        }
+        //调色板
+        public function draw_color($color, $transparent = 100)
+        {
+            $canvas_palette = new RGB();
+            return $canvas_palette->color($color, $transparent);
+        }
+        //坐标
+        public function draw_point($x, $y)
+        {
+            $canvas_point = new Point($x, $y);
+            return $canvas_point;
+        }
+
         //颜色图层
         public function background_color_out($canvas_width, $canvas_height, $color)
         {
@@ -192,9 +192,9 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //打开图像
             $bg_image = parent::image_open($bg_material[$use_count]);
             //获得尺寸
-            $bg_org_size = parent::image_get_size($bg_image);
+            $bg_org_size = parent::image_size($bg_image);
 
-            $bg_org_box = self::draw_box($bg_org_size['ow'], $bg_org_size['oh']);
+            $bg_org_box = self::draw_box($bg_org_size['w'], $bg_org_size['h']);
             //获得空画布
             $new_image = self::draw_create($canvas_width, $canvas_height);
 
@@ -216,13 +216,13 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //使用居中缩放
             else {
                 //计算缩放比例
-                $ratio = parent::image_scale_ratio($canvas_width, $canvas_height, $bg_org_size['ow'], $bg_org_size['oh'], false);
+                $ratio = parent::image_scale_ratio($canvas_width, $canvas_height, $bg_org_size['w'], $bg_org_size['h'], false);
                 //缩放图像
                 $bg_size_box = $bg_org_box->scale($ratio);
                 $bg_image->resize($bg_size_box);
                 //计算缩放后尺寸
-                $bg_scale_width = intval($bg_org_size['ow'] * $ratio);
-                //$bg_scale_height = intval($bg_org_size['oh'] * $ratio);
+                $bg_scale_width = intval($bg_org_size['w'] * $ratio);
+                //$bg_scale_height = intval($bg_org_size['h'] * $ratio);
                 //计算居中的偏移坐标
                 $bg_point = self::draw_point(($canvas_width - $bg_scale_width) / 2, 0);
                 //合并图像
@@ -238,23 +238,23 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //打开图像
             $bg_image = parent::image_open($image_file);
             //获得尺寸
-            $bg_org_size = parent::image_get_size($bg_image);
-            $bg_org_box = self::draw_box($bg_org_size['ow'], $bg_org_size['oh']);
+            $bg_org_size = parent::image_size($bg_image);
+            $bg_org_box = self::draw_box($bg_org_size['w'], $bg_org_size['h']);
 
             //计算缩放比例
-            $ratio = parent::image_scale_ratio($canvas_width, $canvas_height, $bg_org_size['ow'], $bg_org_size['oh'], true);
+            $ratio = parent::image_scale_ratio($canvas_width, $canvas_height, $bg_org_size['w'], $bg_org_size['h'], true);
             //生成缩放图像
             $bg_size_box = $bg_org_box->scale($ratio);
             $bg_image->resize($bg_size_box);
 
-            $bg_scale_width = intval($bg_org_size['ow'] * $ratio);
+            $bg_scale_width = intval($bg_org_size['w'] * $ratio);
             //如果缩放后宽度大于使用宽度，发生裁剪
             if ($bg_scale_width > $canvas_width) {
                 //计算居中的偏移坐标
-                $bg_cop_point = self::draw_point(($bg_scale_width - $canvas_width) / 2, 0);
-                $bg_cop_box = self::draw_box($canvas_width, $canvas_height);
+                $bg_crop_point = self::draw_point(($bg_scale_width - $canvas_width) / 2, 0);
+                $bg_crop_box = self::draw_box($canvas_width, $canvas_height);
                 //裁剪图像
-                $bg_image->crop($bg_cop_point, $bg_cop_box);
+                $bg_image->crop($bg_crop_point, $bg_crop_box);
             }
 
             return $bg_image;
@@ -384,8 +384,8 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //打开图像
             $image = parent::image_open($image_file);
             //获得尺寸
-            $fg_org_size = parent::image_get_size($image);
-            $fg_org_box = self::draw_box($fg_org_size['ow'], $fg_org_size['oh']);
+            $fg_org_size = parent::image_size($image);
+            $fg_org_box = self::draw_box($fg_org_size['w'], $fg_org_size['h']);
 
             //预留缩放边距
             $margin_offset = $this->config['cover_fg_thumb_margin'];
@@ -396,16 +396,16 @@ if (!class_exists('AYA_Imagine_Draws')) {
             $thumb_height = $canvas_height - ($margin_offset + $frame_width) * 2;
 
             //计算缩放比例
-            $ratio = parent::image_scale_ratio($thumb_width, $thumb_height, $fg_org_size['ow'], $fg_org_size['oh'], false);
+            $ratio = parent::image_scale_ratio($thumb_width, $thumb_height, $fg_org_size['w'], $fg_org_size['h'], false);
 
             //生成缩放图像
             $fg_size_box = $fg_org_box->scale($ratio);
             $image->resize($fg_size_box);
 
             //获得缩放后的尺寸
-            $thumb_size = parent::image_get_size($image);
-            $thumb_width = $thumb_size['ow'];
-            $thumb_height = $thumb_size['oh'];
+            $thumb_size = parent::image_size($image);
+            $thumb_width = $thumb_size['w'];
+            $thumb_height = $thumb_size['h'];
             //计算居中的偏移坐标
             $thumb_position = parent::image_point_coordinate('center-center', $canvas_width, $canvas_height, $thumb_width, $thumb_height);
             $point_x = $thumb_position['pw'];

@@ -37,6 +37,7 @@ if (!class_exists('AYA_Image_Action')) {
                 'save_thumb_prefix' => 'thumb_',
                 'save_format' => 'jpg', //png webp
                 'save_quality' => 86,
+                'save_backup_raw_file' => true,
                 'thumb_default_width' => 400,
                 'thumb_default_height' => 300,
                 'font_path' => (__DIR__) . '/font/SourceHanSansCN-Bold.otf',
@@ -82,14 +83,3 @@ if (!class_exists('AYA_Image_Action')) {
 }
 //启动
 AYA_Image_Action::instance();
-
-//获取WP正文第一个图片
-function get_wp_post_first_image()
-{
-    $img_url = aya_match_post_first_image(0, false);
-    if (empty($img_url)) return false;
-    //转换为本地路径
-    $img_path = aya_local_path_with_url($img_url, true);
-
-    return $img_path;
-}
