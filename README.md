@@ -19,16 +19,15 @@ PS：创建 Composer 的 PHP 版本为 8.1 ，需要更低版本的可以自行�
 ## 使用方式
 
 图片处理：
-`
-$img = new AYA_Imagine_Trans();
-$image_file = $img->image_generate($image_file, 'convert', true);
-$image_file = $img->image_generate($image_file, 'auto_scale');
-$image_file = $img->image_generate($image_file, 'watermark');
-`
+
+`$img = new AYA_Imagine_Trans();`
+`$image_file = $img->image_generate($image_file, 'convert', true);`
+`$image_file = $img->image_generate($image_file, 'auto_scale');`
+`$image_file = $img->image_generate($image_file, 'watermark');`
 
 图片生成：
-`
-$cover = array(
+
+`$cover = array(
     //'bg_by_color' => '',
     //'bg_material' => 6,
     'bg_by_custom_image' => $image_file,
@@ -41,8 +40,8 @@ $cover = array(
     //'title_bottom' => '测试文字',
     'title_auto' => '恶魔妹妹卖卖萌恶魔妹妹卖卖萌',
     //'thumb_image' => $thisfile,
-);
-$cover_draw = new AYA_Imagine_Draws();
-$cover_draw->image_cover_drawing($cover);
-`
+);`
+`$cover_draw = new AYA_Imagine_Draws();`
+`$cover_draw->image_cover_drawing($cover);`
 
+一些其他的设置和参数，默认是在 setup.php 里定义的。
