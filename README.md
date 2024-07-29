@@ -18,21 +18,32 @@ PS：创建 Composer 的 PHP 版本为 8.1 ，需要更低版本的可以自行�
 
 ## 使用方式
 
+一些字体、尺寸等其他的设置和参数，默认是在 setup.php 里定义的。
+
+更详细的说明之后有时间再写吧，这里先给出DEMO。
+
 图片处理：
+
+返回的是图片文件的路径，输出前需要先截取成相对路径或转换成URL。
 ```
 $image = new AYA_Imagine_Trans();
 $image_file = $image->image_generate($image_file, 'convert', true);
 $image_file = $image->image_generate($image_file, 'auto_scale');
 $image_file = $image->image_generate($image_file, 'watermark');
+return $image_file;
 ```
 
 生成缩略图：
+
+返回的是缩略图文件的绝对路径，输出前需要先截取成相对路径或转换成URL。
 ```
 $thumb = new AYA_Imagine_Trans();
-$thumb->image_thumb_generate($image_file, 200, 200);
+return $thumb->image_thumb_generate($image_file, 200, 200);
 ```
 
-图片生成：
+封面图生成：
+
+按照数组定义的顺序生成图层，可自由排列组合，结构为背景、蒙版、标题。返回的文件的绝对路径。
 ```
 $cover = array(
     //'bg_by_color' => '',
@@ -46,10 +57,8 @@ $cover = array(
     //'title_top' => '测试文字',
     //'title_bottom' => '测试文字',
     'title_auto' => '恶魔妹妹卖卖萌恶魔妹妹卖卖萌',
-    //'thumb_image' => $thisfile,
+    //'thumb_image' => $image_file,
 );
 $cover_draw = new AYA_Imagine_Draws();
-$cover_draw->image_cover_drawing($cover);
+return $cover_draw->image_cover_drawing($cover);
 ```
-
-一些其他的设置和参数，默认是在 setup.php 里定义的。
