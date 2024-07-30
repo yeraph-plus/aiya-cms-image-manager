@@ -69,15 +69,15 @@ if (!class_exists('AYA_Imagine_Trans')) {
                 //分割参数
                 list($width, $height) = explode('x', $width);
             }
-            //如果宽高均未设置
+            //如果宽高均未设置parent::get_config
             if ($width === 0 && $height === 0) {
-                $width = $this->config['thumb_default_width'];
-                $height = $this->config['thumb_default_height'];
+                $width = parent::get_config('thumb_default_width');
+                $height = parent::get_config('thumb_default_height');
             }
 
             //保存位置
-            $thumb_name = $this->config['save_thumb_prefix'] . md5($image_local_url, false) . $this->config['save_format'];
-            $thumb_dir = parent::local_mkdir($this->config['save_upload_path'] . '/' . $width . 'x' . $height);
+            $thumb_name = parent::get_config('save_thumb_prefix') . md5($image_local_url, false) . parent::get_config('save_format');
+            $thumb_dir = parent::local_mkdir(parent::get_config('save_upload_path') . '/' . $width . 'x' . $height);
             $thumb_saved_path = $thumb_dir . '/' . $thumb_name;
             //已生成，直接返回
             if (file_exists($thumb_saved_path)) {
@@ -119,7 +119,7 @@ if (!class_exists('AYA_Imagine_Trans')) {
             }
 
             //保存图像
-            $save_quality = parent::image_save_quality($this->config['save_format']);
+            $save_quality = parent::image_save_quality(parent::get_config('save_format'));
             $image->save($thumb_saved_path, $save_quality);
 
             return $thumb_saved_path;
@@ -139,7 +139,7 @@ if (!class_exists('AYA_Imagine_Trans')) {
         {
             if (!is_object($image)) return false;
 
-            $max_width = $this->config['save_max_width'];
+            $max_width = parent::get_config('save_max_width');
 
             //如果设置为0则不执行
             if ($max_width == 0) return true;
@@ -167,18 +167,24 @@ if (!class_exists('AYA_Imagine_Trans')) {
         {
             if (!is_object($image)) return false;
 
+
+            $watermark_type = parent::get_config('watermark_type');
+
+            //如果设置为0则不执行
+            if ($watermark_type == '') return true;
+
             //获得尺寸
             $image_size = parent::image_size($image);
 
             //检查图片水印还是文字水印
-            if ($this->config['watermark_type'] == 'image') {
+            if ($watermark_type == 'image') {
                 //图片水印
-                $mark_image = parent::image_open($this->config['watermark_image']);
+                $mark_image = parent::image_open(parent::get_config('watermark_image'));
                 //获得尺寸
                 $mark_size = parent::image_size($mark_image);
             } else {
                 //文字水印
-                $watermark_text = $this->config['watermark_font_text'];
+                $watermark_text = parent::get_config('watermark_font_text');
                 $watermark_text_md5 = md5($watermark_text, false);
 
                 $watermark_file = parent::image_cache_path('watermark_' . $watermark_text_md5 . '.png');
@@ -186,10 +192,10 @@ if (!class_exists('AYA_Imagine_Trans')) {
                 //不存在水印文件则创建
                 if (!file_exists($watermark_file)) {
                     //获取字体
-                    $watermark_font_file = $this->config['watermark_font_path'];
-                    $watermark_size = $this->config['watermark_font_size'];
-                    $watermark_color = $this->config['watermark_font_color'];
-                    $watermark_opacity = $this->config['watermark_font_opacity'];
+                    $watermark_font_file = parent::get_config('watermark_font_path');
+                    $watermark_size = parent::get_config('watermark_font_size');
+                    $watermark_color = parent::get_config('watermark_font_color');
+                    $watermark_opacity = parent::get_config('watermark_font_opacity');
                     //检查字体文件位置
                     if (!file_exists($watermark_font_file)) return false;
 
@@ -223,7 +229,7 @@ if (!class_exists('AYA_Imagine_Trans')) {
             }
 
             //计算水印位置
-            $position = parent::image_point_coordinate($this->config['watermark_position'], $image_size['w'], $image_size['h'], $mark_size['w'], $mark_size['h']);
+            $position = parent::image_point_coordinate(parent::get_config('watermark_position'), $image_size['w'], $image_size['h'], $mark_size['w'], $mark_size['h']);
 
             $water_mark_point = new Point($position['pw'], $position['ph']);
 

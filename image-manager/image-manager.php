@@ -8,19 +8,22 @@ use Imagine\Gd\Imagine as GdImagine;
 if (!class_exists('AYA_Image_Manager')) {
     class AYA_Image_Manager extends AYA_Image_Action
     {
-        public $config;
         public $manager;
 
         public function __construct()
         {
-            //获得配置
-            $this->config = parent::self_config();
             //选择处理器
             if (self::can_use_imagick()) {
                 $this->manager = new ImagickImagine();
             } else {
                 $this->manager = new GdImagine();
             }
+        }
+        //转换默认的配置参数
+        public function get_config($config)
+        {
+            //检查自订参数组
+            return isset(parent::$custom_config[$config]) ? parent::$custom_config[$config] : (parent::$default_config[$config] ?? null);
         }
         //检查 Imagick 是否可用
         public function can_use_imagick()
@@ -47,7 +50,7 @@ if (!class_exists('AYA_Image_Manager')) {
         public function image_cache_path($cache_name)
         {
             //定义保存路径
-            $cache_file_dir = $this->config['save_upload_path'] . '/cache';
+            $cache_file_dir = self::get_config('save_upload_path') . '/cache';
             $cache_file_name = $cache_name;
 
             return self::local_mkdir($cache_file_dir)  . '/' . $cache_file_name;
@@ -56,9 +59,9 @@ if (!class_exists('AYA_Image_Manager')) {
         public function image_save_new_file_path($save_name = '', $save_path = '')
         {
             //定义保存路径
-            $save_file_dir = $this->config['save_upload_path'] . '/' . $save_path;
+            $save_file_dir = self::get_config('save_upload_path') . '/' . $save_path;
             //定义保存格式
-            $save_extend = $this->config['save_format'];
+            $save_extend = self::get_config('save_format');
             //保存文件名
             if ($save_name == '') {
                 $save_name = 'unname_' . time();
@@ -71,18 +74,18 @@ if (!class_exists('AYA_Image_Manager')) {
         public function image_save_quality($extend = '')
         {
             if (empty($extend)) {
-                $extend = $this->config['save_format'];
+                $extend = self::get_config('save_format');
             }
             //生成质量参数
             switch ($extend) {
                 case 'jpg':
-                    $save_quality = array('jpeg_quality' => $this->config['save_quality']);
+                    $save_quality = array('jpeg_quality' => self::get_config('save_quality'));
                     break;
                 case 'png':
-                    $save_quality = array('png_compression_level' => intval($this->config['save_quality'] / 10));
+                    $save_quality = array('png_compression_level' => intval(self::get_config('save_quality') / 10));
                     break;
                 case 'webp':
-                    $save_quality = array('webp_quality' => $this->config['save_quality']);
+                    $save_quality = array('webp_quality' => self::get_config('save_quality'));
                     break;
                 case 'gif':
                     $save_quality = array('flatten' => false);
@@ -169,11 +172,11 @@ if (!class_exists('AYA_Image_Manager')) {
         public function image_backup($origin_file = '', $copy = false)
         {
             //是否创建原文件备份
-            if ($this->config['save_backup_raw_file']) {
+            if (self::get_config('save_backup_raw_file')) {
                 $origin_file_dir = dirname($origin_file);
                 $origin_file_name = basename($origin_file);
                 //备份原文件
-                $backup_dir = self::local_mkdir($this->config['save_upload_path'] . '/backup');
+                $backup_dir = self::local_mkdir(self::get_config('save_upload_path') . '/backup');
                 $backup_file = $backup_dir . '/raw_' . $origin_file_name;
 
                 //检查文件存在
@@ -186,8 +189,8 @@ if (!class_exists('AYA_Image_Manager')) {
                     //移动文件
                     $moved = rename($origin_file, $backup_file);
                 }
+                return $moved;
             }
-            return $moved;
         }
         //保存位置和保存参数
         public function image_save_param_array($origin_file = '', $save_path = '', $is_url = false)
@@ -199,7 +202,7 @@ if (!class_exists('AYA_Image_Manager')) {
             }
 
             //获取保存格式
-            $save_extend = $this->config['save_format'];
+            $save_extend = self::get_config('save_format');
             //如果是GIF，强制为GIF
             if (strpos($origin_file, '.gif') !== false) {
                 $save_extend = 'gif';
@@ -216,7 +219,7 @@ if (!class_exists('AYA_Image_Manager')) {
             } else {
                 //MD5生成文件名
                 $base_name_md5 = md5($origin_file, false);
-                $save_dir = $this->config['save_upload_path'] . '/' . $save_path;
+                $save_dir = self::get_config('save_upload_path') . '/' . $save_path;
                 $save_name = $base_name_md5 . '.' . $save_extend;
 
                 //Tips: 输出的位置是/wp-content/thumbnail/{$save_path}/thumb_{md5}.jpg
@@ -233,8 +236,8 @@ if (!class_exists('AYA_Image_Manager')) {
         public function image_point_coordinate($position = '', $width = 0, $height = 0, $sub_width = 0, $sub_height = 0)
         {
             //补偿边距
-            $offset_x = $this->config['offset_x'];
-            $offset_y = $this->config['offset_y'];
+            $offset_x = self::get_config('offset_x');
+            $offset_y = self::get_config('offset_y');
 
             //计算中心点，并去除层叠占位
             $size_x = intval(($width - $sub_width) / 2);
@@ -284,7 +287,7 @@ if (!class_exists('AYA_Image_Manager')) {
         public function image_bbox_text_size($font_size, $font_text)
         {
             //检查字体文件位置
-            $font_path = $this->config['font_path'];
+            $font_path = self::get_config('font_path');
             if (!file_exists($font_path)) {
                 return false;
             }

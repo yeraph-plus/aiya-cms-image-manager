@@ -21,7 +21,7 @@ if (!class_exists('AYA_Shortcode_Pic_Bed')) {
         //后台临时图床菜单
         public function add_pic_bed_menu()
         {
-            add_menu_page('上传图片', '简码图床',  'manage_options', 'shortcode-pic-bed', array(&$this, 'upload_page'), 'dashicons-format-image', 99);
+            add_menu_page('上传图片', '简码图床',  'manage_options', 'shortcode-pic-bed', array(&$this, 'upload_page'), 'dashicons-format-image', 81);
             add_submenu_page('shortcode-pic-bed', '查看上传', '图片列表',  'manage_options', 'shortcode-pic-view', array(&$this, 'upload_list_view'), 99);
         }
         //上传页面
@@ -110,7 +110,7 @@ if (!class_exists('AYA_Shortcode_Pic_Bed')) {
                     return;
                 }
             } else {
-                echo '选择图片文件，支持jpg/png/gif/webp。';
+                echo '<p>选择图片文件，支持jpg/png/gif/webp。</p>';
             }
         }
         //读取控件
@@ -135,12 +135,10 @@ if (!class_exists('AYA_Shortcode_Pic_Bed')) {
                         $file_path = $dir . '/' . $file;
 
                         if (is_file($file_path)) {
-
-                            $style = 'width: 100px; height: auto; margin: 5px;';
-                            echo '<img src="' . trans_url($file_path) . '" title="' . $file . '" style="' . $style . '" />';
+                            echo '<img src="' . trans_url($file_path) . '" title="' . $file . '" />';
                         }
                         if (is_dir($file_path)) {
-                            echo '<br />';
+                            echo '<hr />';
                             echo '<p> ' . $title . ' "' . trans_url($file_path) . '/" </p>';
                             //递归
                             entry_dir($file_path, '位置');

@@ -20,8 +20,8 @@ if (!class_exists('AYA_Imagine_Draws')) {
         //海报生成实例
         public function image_poster_drawing()
         {
-            $width = $this->config['poster_width'];
-            $height = $this->config['poster_height'];
+            $width = parent::get_config('poster_width');
+            $height = parent::get_config('poster_height');
 
             $image = self::draw_create($width, $height);
             //输出
@@ -37,8 +37,8 @@ if (!class_exists('AYA_Imagine_Draws')) {
         //图像生成实例
         public function image_cover_drawing($cover_apply = array())
         {
-            $width = $this->config['cover_width'];
-            $height = $this->config['cover_height'];
+            $width = parent::get_config('cover_width');
+            $height = parent::get_config('cover_height');
 
             $image = self::draw_create($width, $height);
 
@@ -90,7 +90,7 @@ if (!class_exists('AYA_Imagine_Draws')) {
             $cover_cache = parent::image_cache_path('cover_cached_background.jpg');
             $image->save($cover_cache, array('jpeg_quality' => 96));
 
-            $auto_color = $this->config['cover_fg_element_color_auto'];
+            $auto_color = parent::get_config('cover_fg_element_color_auto');
             if ($auto_color) {
                 //计算主要颜色
                 $bg_main_color = parent::image_primary_color($cover_cache);
@@ -101,9 +101,9 @@ if (!class_exists('AYA_Imagine_Draws')) {
                 $cover_bright = parent::image_average_brightness($cover_cache);
 
                 if ($cover_bright > 128) {
-                    $use_color = $this->config['cover_fg_element_color_light'];
+                    $use_color = parent::get_config('cover_fg_element_color_light');
                 } else {
-                    $use_color = $this->config['cover_fg_element_color_dark'];
+                    $use_color = parent::get_config('cover_fg_element_color_dark');
                 }
             }
 
@@ -170,7 +170,7 @@ if (!class_exists('AYA_Imagine_Draws')) {
         {
             //背景色
             if (empty($color)) {
-                $color = $this->config['background_default_color'];
+                $color = parent::get_config('background_default_color');
             }
             $canvas_color = self::draw_color($color, 100);
             //创建画布
@@ -185,7 +185,7 @@ if (!class_exists('AYA_Imagine_Draws')) {
         {
             $use_count = intval($use_count);
             //使用内置素材
-            $bg_material = (array) $this->config['cover_bg_material_in'];
+            $bg_material = (array) parent::get_config('cover_bg_material_in');
             //判断使用图片顺序
             $use_count = ($use_count == 0) ? mt_rand(0, (count($bg_material) - 1)) : ($use_count - 1);
 
@@ -262,8 +262,8 @@ if (!class_exists('AYA_Imagine_Draws')) {
         //图层文字
         public function foreground_content_pos_out($canvas_width, $canvas_height, $content, $white_color, $position_type = 'center')
         {
-            $font_file = $this->config['font_path'];
-            $font_size = $this->config['cover_fg_font_size'];
+            $font_file = parent::get_config('font_path');
+            $font_size = parent::get_config('cover_fg_font_size');
             $font_color = self::draw_color($white_color, 100);
             //设置一个阴影偏移量
             $shadow_offset = 3;
@@ -286,7 +286,7 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //自动分割文字位置
             if ($position_type == 'auto') {
                 //一行的最大字数
-                $max_word = intval($canvas_width / $this->config['cover_fg_font_width']);
+                $max_word = intval($canvas_width / parent::get_config('cover_fg_font_width'));
                 //是单数，-1
                 if ($max_word % 2 != 0) {
                     $max_word -= 1;
@@ -388,9 +388,9 @@ if (!class_exists('AYA_Imagine_Draws')) {
             $fg_org_box = self::draw_box($fg_org_size['w'], $fg_org_size['h']);
 
             //预留缩放边距
-            $margin_offset = $this->config['cover_fg_thumb_margin'];
-            $frame_width = $this->config['cover_fg_thumb_frame_width'];
-            $frame_color = $this->config['cover_fg_thumb_frame_color'];
+            $margin_offset = parent::get_config('cover_fg_thumb_margin');
+            $frame_width = parent::get_config('cover_fg_thumb_frame_width');
+            $frame_color = parent::get_config('cover_fg_thumb_frame_color');
             $shadow_offset = 5;
             $thumb_width = $canvas_width - ($margin_offset + $frame_width) * 2;
             $thumb_height = $canvas_height - ($margin_offset + $frame_width) * 2;
