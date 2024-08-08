@@ -198,16 +198,3 @@ if (!class_exists('AYA_Shortcode_Pic_Bed')) {
         }
     }
 }
-//启动
-AYA_Shortcode_Pic_Bed::instance();
-
-//获取WP正文第一个图片
-function get_wp_post_first_image()
-{
-    $img_url = aya_match_post_first_image(0, false);
-    if (empty($img_url)) return false;
-    //转换为本地路径
-    $img_path = aya_local_path_with_url($img_url, true);
-
-    return $img_path;
-}

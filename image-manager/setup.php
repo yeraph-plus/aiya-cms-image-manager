@@ -24,11 +24,11 @@ if (!class_exists('AYA_Image_Action')) {
             'offset_x' => 10,
             'offset_y' => 10,
             //水印参数
-            'watermark_type' => 'text', //text image
+            'watermark_type' => '', //text image
             'watermark_position' => 'bottom-right',
             'watermark_image' => (__DIR__) . '/image/default_watermark.png',
             'watermark_font_path' => (__DIR__) . '/font/SourceHanSansCN-Light.otf',
-            'watermark_font_text' => 'AIYA-CMS | Yeraph.com - 2024',
+            'watermark_font_text' => 'AIYA-CMS',
             'watermark_font_size' => 24,
             'watermark_font_color' => '#ffffff',
             'watermark_font_opacity' => 80,
@@ -80,7 +80,3 @@ if (!class_exists('AYA_Image_Action')) {
         }
     }
 }
-
-//启动
-$inst_config = array();
-AYA_Image_Action::instance($inst_config);

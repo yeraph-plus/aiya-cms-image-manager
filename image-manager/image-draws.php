@@ -273,6 +273,8 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //检查字体文件位置
             if (!file_exists($font_file)) return $white_image;
 
+            if (empty($content)) return $white_image;
+
             //加载字体
             $white_font = $this->manager->font($font_file, $font_size, $font_color);
             //加载阴影
