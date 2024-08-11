@@ -28,7 +28,7 @@ if (!class_exists('AYA_Shortcode_Pic_Bed')) {
         public function upload_page()
         {
             //加载css
-            wp_enqueue_style('shortcode-pic-bed', plugins_url('assets/bed-style.css', __FILE__));
+            wp_enqueue_style('shortcode-pic-bed', AYA_PICBED_CSS_URL . '/assets/bed-style.css');
 
             include_once (__DIR__) . '/upload/pic-bed-up.php';
         }
@@ -36,7 +36,7 @@ if (!class_exists('AYA_Shortcode_Pic_Bed')) {
         public function upload_list_view()
         {
             //加载css
-            wp_enqueue_style('shortcode-pic-bed', plugins_url('assets/bed-style.css', __FILE__));
+            wp_enqueue_style('shortcode-pic-bed', AYA_PICBED_CSS_URL . '/assets/bed-style.css');
 
             include_once (__DIR__) . '/upload/pic-bed-list.php';
         }
