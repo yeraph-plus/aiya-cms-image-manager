@@ -191,6 +191,9 @@ if (!class_exists('AYA_Imagine_Draws')) {
 
             //打开图像
             $bg_image = parent::image_open($bg_material[$use_count]);
+            //验证
+            if (!is_object($bg_image)) return null;
+
             //获得尺寸
             $bg_org_size = parent::image_size($bg_image);
 
@@ -237,6 +240,8 @@ if (!class_exists('AYA_Imagine_Draws')) {
         {
             //打开图像
             $bg_image = parent::image_open($image_file);
+            //验证
+            if (!is_object($bg_image)) return null;
             //获得尺寸
             $bg_org_size = parent::image_size($bg_image);
             $bg_org_box = self::draw_box($bg_org_size['w'], $bg_org_size['h']);
@@ -271,9 +276,9 @@ if (!class_exists('AYA_Imagine_Draws')) {
             //获得空画布
             $white_image = self::draw_create($canvas_width, $canvas_height);
             //检查字体文件位置
-            if (!file_exists($font_file)) return $white_image;
+            if (!file_exists($font_file)) return null;
 
-            if (empty($content)) return $white_image;
+            if (empty($content)) return null;
 
             //加载字体
             $white_font = $this->manager->font($font_file, $font_size, $font_color);
@@ -285,10 +290,11 @@ if (!class_exists('AYA_Imagine_Draws')) {
             $white_box_width = $white_box_size->getWidth();
             //$white_box_height = $white_box_size->getHeight();
 
+            //一行的最大字数
+            $max_word = intval($canvas_width / parent::get_config('cover_fg_font_width'));
+
             //自动分割文字位置
             if ($position_type == 'auto') {
-                //一行的最大字数
-                $max_word = intval($canvas_width / parent::get_config('cover_fg_font_width'));
                 //是单数，-1
                 if ($max_word % 2 != 0) {
                     $max_word -= 1;
@@ -311,6 +317,9 @@ if (!class_exists('AYA_Imagine_Draws')) {
             }
             //文字定位模式
             else {
+                //截取最大字数
+                $content = mb_substr($content, 0, $max_word, 'UTF-8');
+
                 switch ($position_type) {
                     case 'center':
                         $content_2nd = $content;
@@ -385,6 +394,9 @@ if (!class_exists('AYA_Imagine_Draws')) {
         {
             //打开图像
             $image = parent::image_open($image_file);
+            //验证
+            if (!is_object($bg_image)) return null;
+
             //获得尺寸
             $fg_org_size = parent::image_size($image);
             $fg_org_box = self::draw_box($fg_org_size['w'], $fg_org_size['h']);

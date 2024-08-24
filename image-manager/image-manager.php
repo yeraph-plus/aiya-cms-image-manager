@@ -100,7 +100,7 @@ if (!class_exists('AYA_Image_Manager')) {
         public function image_open($image_file = '')
         {
             //检查文件存在
-            if (!file_exists($image_file)) return 'ERROR - Image file not found.';
+            if (!file_exists($image_file)) return false;
 
             //返回Object对象
             return $this->manager->open($image_file);
@@ -163,7 +163,7 @@ if (!class_exists('AYA_Image_Manager')) {
             //读取文件
             $content = file_get_contents($image_url);
             //获取失败
-            if ($content === false) return 'ERROR - Unable to load remote image.';
+            if ($content === false) return false;
 
             //返回Object对象
             return $this->manager->load($content);
