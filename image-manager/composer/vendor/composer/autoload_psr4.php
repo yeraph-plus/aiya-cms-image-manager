@@ -7,6 +7,4 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Imagine\\' => array($vendorDir . '/imagine/imagine/src'),
-    'DASPRiD\\Enum\\' => array($vendorDir . '/dasprid/enum/src'),
-    'BaconQrCode\\' => array($vendorDir . '/bacon/bacon-qr-code/src'),
 );
