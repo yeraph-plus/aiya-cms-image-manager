@@ -15,13 +15,9 @@ if (!defined('ABSPATH')) exit;
  */
 
 define('AYA_IMAGE_VERSION', '1.0');
-define('AYA_IMAGE_PATH', untrailingslashit(plugin_dir_path(__FILE__)));
-define('AYA_PICBED_CSS_URL', plugin_dir_url(__FILE__) . '/bulit-in-pic-bed');
 
 //引入图片处理组件
-require_once AYA_IMAGE_PATH . '/image-manager/setup.php';
-//内置图床扩展
-require_once AYA_IMAGE_PATH . '/bulit-in-pic-bed/setup.php';
+require_once untrailingslashit(plugin_dir_path(__FILE__)) . 'image-manager/setup.php';
 
 /*
 //配置
@@ -72,11 +68,8 @@ $inst_config = array(
     'background_default_color' => '#FFFAFA',
 );
 */
-//启动处理
+//启动处理器
 //AYA_Image_Action::instance($inst_config);
-
-//简码图床
-//AYA_Shortcode_Pic_Bed::instance();
 
 /*
 //获取WP正文第一个图片
