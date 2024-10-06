@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) exit;
 define('AYA_IMAGE_VERSION', '1.0');
 
 //引入图片处理组件
-require_once untrailingslashit(plugin_dir_path(__FILE__)) . 'image-manager/setup.php';
+require_once plugin_dir_path(__FILE__) . 'image-manager/setup.php';
 
 /*
 //配置
